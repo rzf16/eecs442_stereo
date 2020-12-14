@@ -1,0 +1,2 @@
+# EECS 442 Final Project: Real-Time Stereo Vision
+We implement a real-time stereo algorithm by [Ben-Tzvi and Xu](http://rmlab.org/pdf/C16_ROSE_2010.pdf). Images are captured using Raspberry Pi Cameras (PiCams) and sent to a laptop, where the stereo algorithm is run and the depth map is displayed.
