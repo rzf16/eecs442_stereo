@@ -83,28 +83,37 @@ class Stereo:
             print("{} seconds for depth calculation".format(time.time() - depth_start))
         if self.debug:
             vis_map = np.zeros(img1.shape, dtype=np.uint8)
-            vis_map[:,:,1] = (depth_map / self.baseline_cm * self.focal_length_px).astype(np.uint8)
+            print(depth_map.max())
+            vis_map[:,:,1] = (depth_map / depth_map.mean()).astype(np.uint8)
             vis_map[vis_map != 0] = 255 - 255 * vis_map[vis_map != 0]
             cv2.imshow("Depth", vis_map)
             cv2.waitKey(0)
-
         print("{} seconds total".format(time.time() - start))
         return depth_map
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Stereo Vision (rzfeng, dleroys)")
-    parser.add_argument("-v", "--verbose", action="store_true", help="print status messages")
-    parser.add_argument("-d", "--debug", action="store_true", help="print debug messages and images; includes verbose")
-    parser.add_argument("image", metavar="image", type=str, nargs=2, help="stereo images")
-    parser.add_argument("calibration", metavar="calibration", type=str, help="camera calibration json")
-    opts = parser.parse_args()
+    # parser = argparse.ArgumentParser(description="Stereo Vision (rzfeng, dleroys)")
+    # parser.add_argument("-v", "--verbose", action="store_true", help="print status messages")
+    # parser.add_argument("-d", "--debug", action="store_true", help="print debug messages and images; includes verbose")
+    # parser.add_argument("image", metavar="image", type=str, nargs=2, help="stereo images")
+    # parser.add_argument("calibration", metavar="calibration", type=str, help="camera calibration json")
+    # opts = parser.parse_args()
 
-    calib = json.load(open(opts.calibration))
+    calib = json.load(open('calibration.json'))
 
-    stereo = Stereo(calib["baseline_cm"], calib["focal_length_px"], opts.verbose, opts.debug)
+    stereo = Stereo(calib["baseline_cm"], calib["focal_length_px"], True, True)
 
-    img1 = cv2.imread(opts.image[0])
-    img2 = cv2.imread(opts.image[1])
+    cap1 = cv2.VideoCapture('http://rpi0.local:8080/stream/video.mjpeg')
+    cap2 = cv2.VideoCapture('http://rpi1.local:8080/stream/video.mjpeg')
 
-    stereo.get_depth_map(img1, img2)
+    while True:
+        _, frame1 = cap1.read()
+        _, frame2 = cap2.read()
+
+    # img1 = cv2.imread(opts.image[0])
+    # img2 = cv2.imread(opts.image[1])
+        key = cv2.waitKey(20)
+        if key == 27: # exit on ESC
+            break
+        stereo.get_depth_map(frame1, frame2)
